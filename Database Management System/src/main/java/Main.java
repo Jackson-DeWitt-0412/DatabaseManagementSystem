@@ -1,14 +1,20 @@
-//Name: Jackson DeWitt, Course: Software Development 1 (202620-CEN-3024C-23585), Date: 3/11/2026
+//Name: Jackson DeWitt, Course: Software Development 1 (202620-CEN-3024C-23585), Date: 3/21/2026
 //Class Name: Main
 //The main class that currently prompts the user to do all operations that will eventually be communicated through
-//the database by local memory, adding, deleting, and otherwise interacting with books as needed.
+//the database by local memory, adding, deleting, and otherwise interacting with books as needed
 
 import java.util.List;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 public class Main {
     private final BookManager bookManager;
     private final Scanner scanner;
+
+    // Constants for validation
+    private static final int MIN_YEAR = 1021;   // The Tale of Genji, considered first novel
+    private static final int MAX_YEAR = 2026;   // Current year (adjust as needed)
+    private static final Pattern TEXT_PATTERN = Pattern.compile("^[\\p{L}\\s\\-']+$"); // letters, spaces, hyphen, apostrophe
 
     public Main() {
         bookManager = new BookManager();
@@ -33,7 +39,7 @@ public class Main {
                 case "1" -> {
                     boolean added = handleAdd();
                     if (added) System.out.println("Book added successfully.");
-                    else System.out.println("Failed to add book (duplicate ISBN or invalid input).");
+                    else System.out.println("Failed to add book (invalid data or duplicate ISBN).");
                 }
                 case "2" -> {
                     boolean deleted = handleDelete();
@@ -80,42 +86,77 @@ public class Main {
                 Choose an option:\s""";
     }
 
+    // ----- Validation Helpers -----
+    private boolean isValidText(String text) {
+        return text == null || !TEXT_PATTERN.matcher(text).matches();
+    }
+
+    private boolean isValidYear(int year) {
+        return year < MIN_YEAR || year > MAX_YEAR;
+    }
+
+    private boolean isValidIsbn(long isbn) {
+        // Basic check: positive and 13 digits (but can be adjusted)
+        return isbn > 0 && String.valueOf(isbn).length() == 13;
+    }
+
     // ----- Add -----
     private boolean handleAdd() {
         System.out.println("\n--- Add a New Book ---");
         try {
             System.out.print("Title: ");
             String title = scanner.nextLine().trim();
-            if (title.isEmpty()) throw new IllegalArgumentException("Title cannot be empty.");
+            if (isValidText(title)) {
+                System.out.println("Invalid title. Use only letters, spaces, hyphens, and apostrophes.");
+                return false;
+            }
 
             System.out.print("Author(s): ");
             String author = scanner.nextLine().trim();
-            if (author.isEmpty()) throw new IllegalArgumentException("Author cannot be empty.");
+            if (isValidText(author)) {
+                System.out.println("Invalid author. Use only letters, spaces, hyphens, and apostrophes.");
+                return false;
+            }
 
             System.out.print("Type (e.g., Novel, Short Story): ");
             String type = scanner.nextLine().trim();
-            if (type.isEmpty()) throw new IllegalArgumentException("Type cannot be empty.");
+            if (isValidText(type)) {
+                System.out.println("Invalid type. Use only letters, spaces, hyphens, and apostrophes.");
+                return false;
+            }
 
             System.out.print("Genre (e.g., Horror, Mystery): ");
             String genre = scanner.nextLine().trim();
-            if (genre.isEmpty()) throw new IllegalArgumentException("Genre cannot be empty.");
+            if (isValidText(genre)) {
+                System.out.println("Invalid genre. Use only letters, spaces, hyphens, and apostrophes.");
+                return false;
+            }
 
-            System.out.print("Year: ");
+            System.out.print("Year (between " + MIN_YEAR + " and " + MAX_YEAR + "): ");
             int year = Integer.parseInt(scanner.nextLine().trim());
+            if (isValidYear(year)) {
+                System.out.println("Invalid year. Must be between " + MIN_YEAR + " and " + MAX_YEAR + ".");
+                return false;
+            }
 
             System.out.print("Pages: ");
             int pages = Integer.parseInt(scanner.nextLine().trim());
+            if (pages <= 0) {
+                System.out.println("Pages must be a positive integer.");
+                return false;
+            }
 
             System.out.print("ISBN (13 digits): ");
             long isbn = Long.parseLong(scanner.nextLine().trim());
+            if (!isValidIsbn(isbn)) {
+                System.out.println("Invalid ISBN. Must be a 13‑digit number.");
+                return false;
+            }
 
             Book book = new Book(title, author, type, genre, year, pages, isbn);
             return bookManager.addBook(book);
         } catch (NumberFormatException e) {
             System.out.println("Invalid number format. Please enter integers for year, pages, and ISBN.");
-            return false;
-        } catch (IllegalArgumentException e) {
-            System.out.println("Input error: " + e.getMessage());
             return false;
         }
     }
@@ -157,30 +198,78 @@ public class Main {
             }
 
             System.out.println("Leave field blank to keep current value.");
+
             System.out.print("Title [" + existing.getTitle() + "]: ");
             String title = scanner.nextLine();
-            if (title.trim().isEmpty()) title = existing.getTitle();
+            if (title.trim().isEmpty()) {
+                title = existing.getTitle();
+            } else if (isValidText(title.trim())) {
+                System.out.println("Invalid title. Use only letters, spaces, hyphens, and apostrophes.");
+                return false;
+            } else {
+                title = title.trim();
+            }
 
             System.out.print("Author(s) [" + existing.getAuthor() + "]: ");
             String author = scanner.nextLine();
-            if (author.trim().isEmpty()) author = existing.getAuthor();
+            if (author.trim().isEmpty()) {
+                author = existing.getAuthor();
+            } else if (isValidText(author.trim())) {
+                System.out.println("Invalid author. Use only letters, spaces, hyphens, and apostrophes.");
+                return false;
+            } else {
+                author = author.trim();
+            }
 
             System.out.print("Type [" + existing.getType() + "]: ");
             String type = scanner.nextLine();
-            if (type.trim().isEmpty()) type = existing.getType();
+            if (type.trim().isEmpty()) {
+                type = existing.getType();
+            } else if (isValidText(type.trim())) {
+                System.out.println("Invalid type. Use only letters, spaces, hyphens, and apostrophes.");
+                return false;
+            } else {
+                type = type.trim();
+            }
 
             System.out.print("Genre [" + existing.getGenre() + "]: ");
             String genre = scanner.nextLine();
-            if (genre.trim().isEmpty()) genre = existing.getGenre();
+            if (genre.trim().isEmpty()) {
+                genre = existing.getGenre();
+            } else if (isValidText(genre.trim())) {
+                System.out.println("Invalid genre. Use only letters, spaces, hyphens, and apostrophes.");
+                return false;
+            } else {
+                genre = genre.trim();
+            }
 
             System.out.print("Year [" + existing.getYear() + "]: ");
             String yearStr = scanner.nextLine();
-            int year = yearStr.trim().isEmpty() ? existing.getYear() : Integer.parseInt(yearStr);
+            int year;
+            if (yearStr.trim().isEmpty()) {
+                year = existing.getYear();
+            } else {
+                year = Integer.parseInt(yearStr);
+                if (isValidYear(year)) {
+                    System.out.println("Invalid year. Must be between " + MIN_YEAR + " and " + MAX_YEAR + ".");
+                    return false;
+                }
+            }
 
             System.out.print("Pages [" + existing.getPages() + "]: ");
             String pagesStr = scanner.nextLine();
-            int pages = pagesStr.trim().isEmpty() ? existing.getPages() : Integer.parseInt(pagesStr);
+            int pages;
+            if (pagesStr.trim().isEmpty()) {
+                pages = existing.getPages();
+            } else {
+                pages = Integer.parseInt(pagesStr);
+                if (pages <= 0) {
+                    System.out.println("Pages must be a positive integer.");
+                    return false;
+                }
+            }
 
+            // ISBN cannot be changed
             Book updated = new Book(title, author, type, genre, year, pages, isbn);
             return bookManager.updateBook(updated);
         } catch (NumberFormatException e) {

@@ -1,4 +1,4 @@
-//Name: Jackson DeWitt, Course: Software Development 1 (202620-CEN-3024C-23585), Date: 3/11/2026
+//Name: Jackson DeWitt, Course: Software Development 1 (202620-CEN-3024C-23585), Date: 3/21/2026
 //Class Name: Book
 //The object the whole project revolves around, detailing all seven (7) values the book(s) is/are expected to hold
 
@@ -10,8 +10,6 @@ public class Book {
     private int year;
     private int pages;
     private long isbn;
-
-    public Book() {}
 
     public Book(String title, String author, String type, String genre, int year, int pages, long isbn) {
         this.title = title;
