@@ -1,6 +1,7 @@
-//Name: Jackson DeWitt, Course: Software Development 1 (202620-CEN-3024C-23585), Date: 3/21/2026
+//Name: Jackson DeWitt, Course: Software Development 1 (202620-CEN-3024C-23585), Date: 3/31/2026
 //Class Name: Book
 //The object the whole project revolves around, detailing all seven (7) values the book(s) is/are expected to hold
+//Despite the changes to other parts of the program, this file has remained relatively the same.
 
 public class Book {
     private String title;
@@ -9,9 +10,12 @@ public class Book {
     private String genre;
     private int year;
     private int pages;
-    private long isbn;
+    private long isbn;   // ISBN MUST BE 13 digits
 
-    public Book(String title, String author, String type, String genre, int year, int pages, long isbn) {
+    public Book() {}
+
+    public Book(String title, String author, String type, String genre,
+                int year, int pages, long isbn) {
         this.title = title;
         this.author = author;
         this.type = type;
@@ -39,20 +43,7 @@ public class Book {
 
     @Override
     public String toString() {
-        return String.format("| %-30s | %-20s | %-15s | %-15s | %4d | %5d | %13d |",
+        return String.format("%-30s %-20s %-15s %-15s %4d %5d %13d",
                 title, author, type, genre, year, pages, isbn);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Book book = (Book) o;
-        return isbn == book.isbn;
-    }
-
-    @Override
-    public int hashCode() {
-        return Long.hashCode(isbn);
     }
 }

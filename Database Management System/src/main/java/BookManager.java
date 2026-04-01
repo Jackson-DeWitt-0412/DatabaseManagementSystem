@@ -1,24 +1,20 @@
-//Name: Jackson DeWitt, Course: Software Development 1 (202620-CEN-3024C-23585), Date: 3/21/2026
+//Name: Jackson DeWitt, Course: Software Development 1 (202620-CEN-3024C-23585), Date: 3/31/2026
 //Class Name: BookManager
-//Eventually to be replaced with the DatabaseManager, the current code within the BookManager is largely (probably)
+//Soon to be replaced with the DatabaseManager, the current code within the BookManager is largely (probably)
 //going to be the same: it handles all the books entered in and, as detailed within the project planning thus far,
 //will be the main communicator between the database, the main program, and the books. For now though, it just handles
 //books.
 
+import java.io.*;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class BookManager {
     private final List<Book> books;
 
-    // Validation constants
-    private static final int MIN_YEAR = 1021;
-    private static final int MAX_YEAR = 2026;
-    private static final Pattern TEXT_PATTERN = Pattern.compile("^[\\p{L}\\s\\-']+$");
-
     public BookManager() {
         books = new ArrayList<>();
+        // Optionally add some sample books for demonstration
         addSampleBook();
     }
 
@@ -52,10 +48,6 @@ public class BookManager {
         return false;
     }
 
-    public Book getBook(long isbn) {
-        return books.stream().filter(b -> b.getIsbn() == isbn).findFirst().orElse(null);
-    }
-
     public boolean bookExists(long isbn) {
         return books.stream().anyMatch(b -> b.getIsbn() == isbn);
     }
@@ -64,7 +56,7 @@ public class BookManager {
         return new ArrayList<>(books);
     }
 
-    // ----- Sorting -----
+    // ----- Sorting (custom action) -----
     public List<Book> getSortedBooks(String field, boolean ascending) {
         Comparator<Book> comparator = switch (field.toLowerCase()) {
             case "year" -> Comparator.comparingInt(Book::getYear);
@@ -78,16 +70,16 @@ public class BookManager {
         return books.stream().sorted(comparator).collect(Collectors.toList());
     }
 
-    // ----- Import from file with validation -----
+    // ----- Import from file (pipe‑delimited) -----
     public int importFromFile(String filePath) {
-        java.io.File file = new java.io.File(filePath);
+        File file = new File(filePath);
         if (!file.exists() || !file.canRead()) {
-            return -1;
+            return -1; // file not found/unreadable
         }
 
         int count = 0;
         int lineNumber = 0;
-        try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(file))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
             boolean firstLine = true;
             while ((line = reader.readLine()) != null) {
@@ -101,10 +93,9 @@ public class BookManager {
 
                 String[] parts = line.split("\\|");
                 if (parts.length != 7) {
-                    System.out.println("Warning: Line " + lineNumber + " has incorrect number of fields. Skipped.");
+                    System.err.println("Warning: Line " + lineNumber + " has incorrect number of fields. Skipped.");
                     continue;
                 }
-
                 try {
                     String title = parts[0].trim();
                     String author = parts[1].trim();
@@ -114,21 +105,10 @@ public class BookManager {
                     int pages = Integer.parseInt(parts[5].trim());
                     long isbn = Long.parseLong(parts[6].trim());
 
-                    // Validate fields
-                    if (isValidText(title) || isValidText(author) || isValidText(type) || isValidText(genre)) {
-                        System.out.println("Warning: Line " + lineNumber + " contains invalid text (digits/symbols). Skipped.");
-                        continue;
-                    }
-                    if (year < MIN_YEAR || year > MAX_YEAR) {
-                        System.out.println("Warning: Line " + lineNumber + " has year outside allowed range. Skipped.");
-                        continue;
-                    }
-                    if (pages <= 0) {
-                        System.out.println("Warning: Line " + lineNumber + " has invalid page count. Skipped.");
-                        continue;
-                    }
-                    if (String.valueOf(isbn).length() != 13 || isbn <= 0) {
-                        System.out.println("Warning: Line " + lineNumber + " has invalid ISBN. Skipped.");
+                    // Basic validation (can be enhanced)
+                    if (title.isEmpty() || author.isEmpty() || type.isEmpty() || genre.isEmpty() ||
+                            year < 1021 || year > 2026 || pages <= 0 || String.valueOf(isbn).length() != 13) {
+                        System.err.println("Warning: Line " + lineNumber + " contains invalid data. Skipped.");
                         continue;
                     }
 
@@ -137,21 +117,16 @@ public class BookManager {
                         books.add(book);
                         count++;
                     } else {
-                        System.out.println("Warning: Line " + lineNumber + " duplicates existing ISBN. Skipped.");
+                        System.err.println("Warning: Duplicate ISBN at line " + lineNumber + ". Skipped.");
                     }
                 } catch (NumberFormatException e) {
-                    System.out.println("Warning: Line " + lineNumber + " contains invalid number format. Skipped.");
+                    System.err.println("Warning: Line " + lineNumber + " has invalid number format. Skipped.");
                 }
             }
-        } catch (java.io.IOException e) {
-            return -2;
+        } catch (IOException e) {
+            return -2; // IO error
         }
         return count;
-    }
-
-    // ----- Validation helpers -----
-    private boolean isValidText(String text) {
-        return text == null || !TEXT_PATTERN.matcher(text).matches();
     }
 
     // ----- Utility -----
