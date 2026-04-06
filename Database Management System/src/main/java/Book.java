@@ -1,7 +1,8 @@
-//Name: Jackson DeWitt, Course: Software Development 1 (202620-CEN-3024C-23585), Date: 3/31/2026
+//Name: Jackson DeWitt, Course: Software Development 1 (202620-CEN-3024C-23585), Date: 4/5/2026
 //Class Name: Book
 //The object the whole project revolves around, detailing all seven (7) values the book(s) is/are expected to hold
 //Despite the changes to other parts of the program, this file has remained relatively the same.
+//This remains true even after several iterations of the project.
 
 public class Book {
     private String title;

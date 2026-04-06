@@ -1,5 +1,5 @@
-//Name: Jackson DeWitt, Course: Software Development 1 (202620-CEN-3024C-23585), Date: 3/31/2026
-//Class Name: MainController
+//Name: Jackson DeWitt, Course: Software Development 1 (202620-CEN-3024C-23585), Date: 4/5/2026
+//Class Name: MainView
 //This part of the program makes the UI for the program; most of the information involves making sure all the
 //information is conveyed in the appropriate fields. The logic is handled by the manager, and the policing of whatever
 //the user enters is mostly covered by the controller.
@@ -7,7 +7,6 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.io.File;
 import java.util.List;
 
 public class MainView extends JFrame {
@@ -19,7 +18,7 @@ public class MainView extends JFrame {
 
     public MainView(MainController controller) {
         this.controller = controller;
-        setTitle("DMS - Book Database Manager (In-Memory)");
+        setTitle("DMS - Book Database Manager (SQLite)");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1000, 600);
         setLocationRelativeTo(null);
@@ -44,14 +43,6 @@ public class MainView extends JFrame {
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
 
-        // Import button
-        JButton importButton = new JButton("Import from File");
-        importButton.addActionListener(_ -> importFile());
-        toolBar.add(importButton);
-
-        toolBar.addSeparator();
-
-        // Add, Delete, Edit
         JButton addButton = new JButton("Add");
         addButton.addActionListener(_ -> showAddDialog());
         toolBar.add(addButton);
@@ -66,7 +57,6 @@ public class MainView extends JFrame {
 
         toolBar.addSeparator();
 
-        // Sort
         toolBar.add(new JLabel("Sort by: "));
         sortCombo = new JComboBox<>(new String[]{"Year", "Pages", "ISBN"});
         toolBar.add(sortCombo);
@@ -78,7 +68,6 @@ public class MainView extends JFrame {
 
         toolBar.addSeparator();
 
-        // Refresh
         JButton refreshButton = new JButton("Refresh");
         refreshButton.addActionListener(_ -> controller.refreshTable());
         toolBar.add(refreshButton);
@@ -86,18 +75,6 @@ public class MainView extends JFrame {
         add(toolBar, BorderLayout.NORTH);
     }
 
-    // --- File import with JFileChooser ---
-    private void importFile() {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Select Book Data File (pipe-delimited)");
-        int result = fileChooser.showOpenDialog(this);
-        if (result == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = fileChooser.getSelectedFile();
-            controller.importBooks(selectedFile.getAbsolutePath());
-        }
-    }
-
-    // --- Add dialog ---
     private void showAddDialog() {
         Book newBook = showBookDialog(null);
         if (newBook != null) {
@@ -105,7 +82,6 @@ public class MainView extends JFrame {
         }
     }
 
-    // --- Edit selected book ---
     private void editSelected() {
         int row = bookTable.getSelectedRow();
         if (row == -1) {
@@ -113,7 +89,6 @@ public class MainView extends JFrame {
             return;
         }
         long isbn = (long) tableModel.getValueAt(row, 6);
-        // Retrieve current values from the table
         Book original = new Book();
         original.setIsbn(isbn);
         original.setTitle((String) tableModel.getValueAt(row, 0));
@@ -129,7 +104,6 @@ public class MainView extends JFrame {
         }
     }
 
-    // --- Delete selected book ---
     private void deleteSelected() {
         int row = bookTable.getSelectedRow();
         if (row == -1) {
@@ -140,14 +114,12 @@ public class MainView extends JFrame {
         controller.deleteBook(isbn);
     }
 
-    // --- Apply sort ---
     private void applySort() {
         String field = (String) sortCombo.getSelectedItem();
         boolean ascending = ascendingCheckBox.isSelected();
         controller.sortBooks(field, ascending);
     }
 
-    // --- Generic dialog for adding/editing a book ---
     private Book showBookDialog(Book existing) {
         JTextField titleField = new JTextField(existing != null ? existing.getTitle() : "", 20);
         JTextField authorField = new JTextField(existing != null ? existing.getAuthor() : "", 20);
@@ -174,7 +146,7 @@ public class MainView extends JFrame {
         panel.add(isbnField);
 
         if (existing != null) {
-            isbnField.setEditable(false); // ISBN cannot be changed on edit
+            isbnField.setEditable(false);
         }
 
         int result = JOptionPane.showConfirmDialog(this, panel,
@@ -192,7 +164,6 @@ public class MainView extends JFrame {
             int year = Integer.parseInt(yearField.getText().trim());
             int pages = Integer.parseInt(pagesField.getText().trim());
             long isbn = Long.parseLong(isbnField.getText().trim());
-
             return new Book(title, author, type, genre, year, pages, isbn);
         } catch (NumberFormatException e) {
             showMessage("Invalid numeric input.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -200,7 +171,6 @@ public class MainView extends JFrame {
         }
     }
 
-    // --- Public methods used by controller ---
     public void displayBooks(List<Book> books) {
         tableModel.setRowCount(0);
         for (Book b : books) {
