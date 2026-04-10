@@ -1,14 +1,30 @@
-//Name: Jackson DeWitt, Course: Software Development 1 (202620-CEN-3024C-23585), Date: 4/5/2026
-//Class Name: Main
-//Completely reworked from the original, given the new restructuring of the files and code now makes most functions
-//happen in other files. Now, however, one of the most important functions is prompting the user to pick the database
-//to connect to (though the interface and policing is still largely handled by the controller and view files,
-//respectively).
-
 import javax.swing.*;
 import java.io.File;
 
+/**
+ * The main entry point for the DMS application (Phase 4 – Database Integration).
+ * <p>
+ * This class prompts the user to select an SQLite database file, establishes
+ * a connection, and launches the graphical user interface. The program exits
+ * if the user cancels the file selection or if the database connection fails.
+ * </p>
+ * <p>
+ * Usage: Run the compiled JAR or class; a file chooser will appear. Choose a
+ * valid SQLite database file (e.g., {@code books.db}) that contains a {@code books}
+ * table with the required schema. The GUI then allows full CRUD operations and
+ * sorting on the book collection.
+ * </p>
+ *
+ * @author Jackson DeWitt
+ * @version 1.0
+ */
 public class Main {
+
+    /**
+     * The main method – starts the DMS application.
+     *
+     * @param args command line arguments (not used)
+     */
     public static void main(String[] args) {
         // Ask user for SQLite database file
         String dbPath = null;
@@ -27,7 +43,9 @@ public class Main {
         // Connect to the chosen database
         DatabaseManager dbManager = new DatabaseManager(dbPath);
         if (!dbManager.connect()) {
-            JOptionPane.showMessageDialog(null, "Failed to connect to database.\nPlease ensure the file is a valid SQLite database.", "Connection Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null,
+                    "Failed to connect to database.\nPlease ensure the file is a valid SQLite database.",
+                    "Connection Error", JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
 

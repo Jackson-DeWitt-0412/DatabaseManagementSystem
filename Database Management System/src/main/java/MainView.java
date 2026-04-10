@@ -1,14 +1,25 @@
-//Name: Jackson DeWitt, Course: Software Development 1 (202620-CEN-3024C-23585), Date: 4/5/2026
-//Class Name: MainView
-//This part of the program makes the UI for the program; most of the information involves making sure all the
-//information is conveyed in the appropriate fields. The logic is handled by the manager, and the policing of whatever
-//the user enters is mostly covered by the controller.
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 
+/**
+ * The graphical user interface (presentation layer) for the DMS application.
+ * <p>
+ * This class creates a Swing‑based window with a toolbar and a table that
+ * displays book information. It provides buttons for adding, editing, deleting,
+ * sorting, and refreshing books. All user interactions are forwarded to the
+ * {@link MainController}.
+ * </p>
+ * <p>
+ * The UI is designed to be intuitive: the table shows all books, the toolbar
+ * groups actions, and dialogs collect user input with built‑in validation
+ * (handled by the controller).
+ * </p>
+ *
+ * @author Jackson DeWitt
+ * @version 1.0
+ */
 public class MainView extends JFrame {
     private final MainController controller;
     private JTable bookTable;
@@ -16,6 +27,11 @@ public class MainView extends JFrame {
     private JComboBox<String> sortCombo;
     private JCheckBox ascendingCheckBox;
 
+    /**
+     * Constructs the main application window and initializes the UI components.
+     *
+     * @param controller the controller that will handle user actions
+     */
     public MainView(MainController controller) {
         this.controller = controller;
         setTitle("DMS - Book Database Manager (SQLite)");
@@ -25,8 +41,11 @@ public class MainView extends JFrame {
         initUI();
     }
 
+    /**
+     * Builds the GUI components: table, toolbar, and layout.
+     */
     private void initUI() {
-        // Table model (read-only)
+        // Table model (read‑only)
         tableModel = new DefaultTableModel(
                 new String[]{"Title", "Author", "Type", "Genre", "Year", "Pages", "ISBN"}, 0) {
             @Override
@@ -75,6 +94,9 @@ public class MainView extends JFrame {
         add(toolBar, BorderLayout.NORTH);
     }
 
+    /**
+     * Opens a dialog to add a new book.
+     */
     private void showAddDialog() {
         Book newBook = showBookDialog(null);
         if (newBook != null) {
@@ -82,6 +104,9 @@ public class MainView extends JFrame {
         }
     }
 
+    /**
+     * Opens a dialog to edit the currently selected book.
+     */
     private void editSelected() {
         int row = bookTable.getSelectedRow();
         if (row == -1) {
@@ -104,6 +129,9 @@ public class MainView extends JFrame {
         }
     }
 
+    /**
+     * Deletes the currently selected book after user confirmation.
+     */
     private void deleteSelected() {
         int row = bookTable.getSelectedRow();
         if (row == -1) {
@@ -114,12 +142,21 @@ public class MainView extends JFrame {
         controller.deleteBook(isbn);
     }
 
+    /**
+     * Triggers sorting of the displayed books based on the selected column and order.
+     */
     private void applySort() {
         String field = (String) sortCombo.getSelectedItem();
         boolean ascending = ascendingCheckBox.isSelected();
         controller.sortBooks(field, ascending);
     }
 
+    /**
+     * Shows a modal dialog for entering or editing book details.
+     *
+     * @param existing an existing Book (for edit) or {@code null} for add
+     * @return a new Book with the entered data, or {@code null} if canceled
+     */
     private Book showBookDialog(Book existing) {
         JTextField titleField = new JTextField(existing != null ? existing.getTitle() : "", 20);
         JTextField authorField = new JTextField(existing != null ? existing.getAuthor() : "", 20);
@@ -146,7 +183,7 @@ public class MainView extends JFrame {
         panel.add(isbnField);
 
         if (existing != null) {
-            isbnField.setEditable(false);
+            isbnField.setEditable(false); // ISBN cannot be changed on edit
         }
 
         int result = JOptionPane.showConfirmDialog(this, panel,
@@ -171,6 +208,11 @@ public class MainView extends JFrame {
         }
     }
 
+    /**
+     * Populates the table with a list of books.
+     *
+     * @param books the list of books to display
+     */
     public void displayBooks(List<Book> books) {
         tableModel.setRowCount(0);
         for (Book b : books) {
@@ -186,10 +228,23 @@ public class MainView extends JFrame {
         }
     }
 
+    /**
+     * Displays a simple message dialog.
+     *
+     * @param message     the text to show
+     * @param title       the dialog title
+     * @param messageType one of {@link JOptionPane} message types
+     */
     public void showMessage(String message, String title, int messageType) {
         JOptionPane.showMessageDialog(this, message, title, messageType);
     }
 
+    /**
+     * Shows a confirmation dialog (Yes/No).
+     *
+     * @param message the message to display
+     * @return the user's choice: {@link JOptionPane#YES_OPTION} or {@link JOptionPane#NO_OPTION}
+     */
     public int showConfirmDialog(String message) {
         return JOptionPane.showConfirmDialog(this, message, "Confirm", JOptionPane.YES_NO_OPTION);
     }
